@@ -172,5 +172,5 @@ def kernel():
 bios()
 
 if __name__ == "__main__":
-    kernel()
     pg.key.set_repeat()
+    kernel()
