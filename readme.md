@@ -1,6 +1,6 @@
 # Welcome to VectorMaster!
 
-VectorMaster is a vector graphics engine that allows you to create and run vector-based programs. I made this with Python and Pygame.
+VectorMaster is a vector graphics engine that allows you to create and run vector-based programs. I made this with Python and Pygame. In the universe for my Snapverse games, VectorMaster is a desktop computer, and a predecessor to the AntiAuto.
 
 ## Features
 
@@ -20,7 +20,7 @@ VectorMaster is a vector graphics engine that allows you to create and run vecto
 
 ### Audio System
 - 2 sound channels (0-1)
-- 16 waveform types (17 for noise)
+- 16 waveform types (17 for noise on channel 1)
 - 4-bit volume (0-15)
 - Frequency control (20-1600 Hz)
 
@@ -47,15 +47,10 @@ VectorMaster is a vector graphics engine that allows you to create and run vecto
 4. Press Ctrl+B to exit any running program
 5. Use Escape to navigate back or exit the file browser
 
-## Creating Programs
+## Dependencies
 
-VectorMaster uses VectorPy, a Python-like language for creating vector graphics programs. Key features include:
-
-- Simple import system (`import main`, `import screen`, etc.)
-- Direct access to vector drawing functions
-- Built-in audio synthesis
-- Event handling system
-- Automatic code parsing and execution
+- Python 3.10+ (I'm using 3.13.1)
+- Pygame 2.5.0+ (I'm using 2.6.1)
 
 ## Controls
 
