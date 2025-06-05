@@ -1,0 +1,68 @@
+import main
+import screen
+import random
+import time
+import aliases
+
+def init_stars(num, maxZ):
+    stars = []
+    for i in range(num):
+        # Format: [current_x, current_y, z, previous_x, previous_y]
+        x = random.randint(-256, 256)
+        y = random.randint(-256, 256)
+        z = random.randint(1, maxZ)
+        stars.append([x, y, z, x, y])
+    return stars
+
+def render_stars(stars, maxZ, trail_speed=0.1):
+    originX = 0
+    originY = 0
+
+    for star in stars:
+        # Store previous position before updating
+        star[3] = star[0]
+        star[4] = star[1]
+        
+        star[2] -= trail_speed
+        
+        #reuse stars
+        if star[2] <= 0:
+            star[2] = maxZ
+            star[0] = random.randint(-256, 256)
+            star[1] = random.randint(-256, 256)
+            star[3] = star[0]  # Reset previous position
+            star[4] = star[1]
+        
+        k = 32 / star[2]
+        x = int(star[0] * k + originX)
+        y = int(star[1] * k + originY)
+        
+        # Calculate previous position
+        k_prev = 32 / (star[2] + trail_speed)
+        prev_x = int(star[3] * k_prev + originX)
+        prev_y = int(star[4] * k_prev + originY)
+
+        if -512 <= x <= 512 and -512 <= y <= 512:
+            screen.draw_line(prev_x, prev_y, x, y)
+
+def main():
+    stars = init_stars(512, 16)
+    running = True
+    while running:
+        screen.clear()
+        screen.draw_string(-256, 240, "Starfield", 1)
+        render_stars(stars, 16, 0.5)
+        screen.update()
+        time.sleep(0.06)
+        
+        for get_events:
+            if quit_event:
+                running = False
+            elif resize_event:
+                screen.handle_resize(event)
+            elif key_down_event:
+                if special_key:
+                    running = False
+    stop()
+
+main()

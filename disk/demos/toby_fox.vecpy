@@ -1,0 +1,132 @@
+#undertale/deltarune type fight
+
+import main
+import screen
+import aliases
+import time
+import random
+import audio
+
+# Enable key repeating - first number is the delay before repeating starts (in ms),
+# second number is the interval between repeats (in ms)
+key_delay(10, 50)
+
+def player(x, y):
+    screen.draw_string(x, y, "♥", 1)
+
+def box():
+    width = 128
+    height = 128
+    screen.draw_line(-width/2, -height/2, width/2, -height/2)
+    screen.draw_line(-width/2, -height/2, -width/2, height/2)
+    screen.draw_line(-width/2, height/2, width/2, height/2)
+    screen.draw_line(width/2, -height/2, width/2, height/2)
+
+def spawn_bullet():
+    direction = random.randint(0, 3)
+    if direction == 0:  # From left
+        return [-256, random.randint(-256, 256), 1, 0]  # x, y, dx, dy
+    elif direction == 1:  # From right
+        return [256, random.randint(-256, 256), -1, 0]
+    elif direction == 2:  # From top
+        return [random.randint(-256, 256), 256, 0, -1]
+    else:  # From bottom
+        return [random.randint(-256, 256), -256, 0, 1]
+
+def update_bullets(bullets):
+    bullet_speed = 4
+    # Move existing bullets
+    for bullet in bullets[:]:  # Create a copy of the list to iterate over
+        bullet[0] += bullet[2] * bullet_speed  # Update x position
+        bullet[1] += bullet[3] * bullet_speed  # Update y position
+        
+        # Remove bullets that are way off screen
+        if (bullet[0] < -512 or bullet[0] > 512 or 
+            bullet[1] < -512 or bullet[1] > 512):
+            bullets.remove(bullet)
+
+def draw_bullets(bullets):
+    for bullet in bullets:
+        screen.draw_dot(bullet[0], bullet[1])
+
+def check_collision(player_x, player_y, bullets):
+    for bullet in bullets[:]:  # Create a copy to safely modify during iteration
+        # Check if bullet is within 8 units of player (adjust this value for different hitbox sizes)
+        if (abs(bullet[0] - player_x) < 8 and 
+            abs(bullet[1] - player_y) < 8):
+            return True
+    return False
+
+def main():
+    running = True
+    player_x = 0
+    player_y = 0
+    bullets = []
+    hp = 100
+    spawn_timer = 0
+    spawn_interval = 5  # Adjust this to control bullet spawn rate
+    
+    while running:
+        for get_events:
+            if quit_event:
+                running = False
+            if resize_event:
+                screen.handle_resize(event)
+            if key_down_event:
+                if special_key:
+                    running = False
+                if key_x:
+                    player_speed = 4
+                else:
+                    player_speed = 8
+                if key_UP:
+                    player_y += player_speed
+                if key_DOWN:
+                    player_y -= player_speed
+                if key_LEFT:
+                    player_x -= player_speed
+                if key_RIGHT:
+                    player_x += player_speed
+        if hp > 0:
+            # Spawn new bullets
+            spawn_timer += 1
+            if spawn_timer >= spawn_interval:
+                bullets.append(spawn_bullet())
+                spawn_timer = 0
+            
+            # Update bullet positions
+            update_bullets(bullets)
+            
+            # Check for collisions
+            if check_collision(player_x, player_y, bullets):
+                hp -= 5
+                tone(0, 17, 4, 8, 0.05)
+            # Constrain player position
+            if player_x > 48:
+                player_x = 48
+            if player_x < -64:
+                player_x = -64
+            if player_y > 38:
+                player_y = 38
+            if player_y < -72:
+                player_y = -72
+            
+            
+
+            # Draw everything
+            screen.clear()
+            screen.draw_string(-64, -88, "HP: " + str(hp), 1)
+            player(player_x, player_y)
+            box()
+            draw_bullets(bullets)
+            screen.update()
+            
+            # Add a small delay to control game speed
+            time.sleep(0.016)  # Approximately 60 FPS
+        else:
+            screen.clear()
+            screen.draw_string(-64, -88, "You lose!", 1)
+            time.sleep(3)
+            running = False
+
+main()

@@ -1,0 +1,29 @@
+#VectorPy is a Python-like language for the Vector engine.
+
+
+#it uses most of the same syntax as Python, but it uses the Vector engine's functions instead of Python's.
+
+import main
+import screen
+import random
+import aliases #neccessary unless you want to add them manually for some reason. Needs to be the last import.
+
+screen.type(-256, 240, "Test Program!", 1)
+
+
+def main():
+    running = True
+    while running:
+        screen.draw_dot(random.randint(-512, 512), random.randint(-512, 512))
+        screen.update()
+        for get_events:
+            if quit_event:
+                running = False
+            elif resize_event:
+                screen.handle_resize(event)
+            elif key_down_event:
+                if special_key:
+                    running = False
+    stop()
+
+main()

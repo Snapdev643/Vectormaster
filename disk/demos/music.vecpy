@@ -1,0 +1,76 @@
+import main
+import screen
+import audio
+import aliases
+import time
+
+bpm = 150
+song_position = 0
+patterns = [
+    (['E2', 'A2', 'E3', 'C4', 'A3', 'E2', 'A2', 'E3', 'C4', 'A3', 'E2', 'A2', 'E3', 'C4', 'A3', 'E3'], 2),
+    (['D2', 'G2', 'D3', 'A#3', 'G3', 'D2', 'G2', 'D3', 'A#3', 'G3', 'D2', 'G2', 'D3', 'A#3', 'G3', 'D3'], 2),
+    (['C#2', 'F#2', 'C#3', 'A3', 'F#3', 'C#2', 'F#2', 'C#3', 'A3', 'F#3', 'C#2', 'F#2', 'C#3', 'A3', 'F#3', 'C#3'], 2),
+    (['D2', 'G2', 'D3', 'A#3', 'G3', 'D2', 'G2', 'D3', 'A#3', 'G3', 'D2', 'G2', 'D3', 'A#3', 'G3', 'D3'], 2)
+]
+
+def freq_from_note(note):
+    notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'off']
+    octave = int(note[-1])
+    note_name = note[:-1]
+    note_index = notes.index(note_name)
+    if note_name == 'off':
+        return 0
+    return 440 * 2 ** ((octave - 4) + (note_index / 12))
+
+def play_note(note, volume, wave, duration, channel):
+    freq = freq_from_note(note)
+    duration_ms = duration * 1000 / bpm
+    tone(channel, wave, volume, freq, duration_ms)
+
+last_note_time = 0
+current_pattern = 0
+pattern_repeat = 0
+note_index = 0
+
+def update_song():
+    global last_note_time, current_pattern, pattern_repeat, note_index, song_position
+    
+    current_time = time.time()
+    if current_time - last_note_time >= 0.025:  # Duration between notes
+        if current_pattern < len(patterns):
+            pattern, repeats = patterns[current_pattern]
+            
+            if note_index < len(pattern):
+                note = pattern[note_index]
+                if note != 'off':
+                    play_note(note, 11, 4, 0.025, 0)
+                note_index += 1
+                last_note_time = current_time
+            else:
+                note_index = 0
+                pattern_repeat += 1
+                
+                if pattern_repeat >= repeats:
+                    pattern_repeat = 0
+                    current_pattern += 1
+        else:
+            song_position = -1  # Song finished
+
+def main():
+    global song_position
+    song_position = 0  # Start playing
+    running = True
+    
+    while running:
+        for get_events:
+            if quit_event:
+                running = False
+            if resize_event:
+                screen.handle_resize(event)
+            if key_down_event:
+                if special_key:
+                    running = False
+        
+        if song_position >= 0:
+            update_song()
+main()

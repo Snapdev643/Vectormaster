@@ -1,0 +1,177 @@
+import main
+import screen
+import aliases
+import audio
+import time
+import random
+import math
+import pygame as pg
+
+# Global variables for camera and planet
+camera_x = 0
+camera_y = 0
+camera_z = -500
+pitch = 0  # Rotation around X axis
+yaw = 0    # Rotation around Y axis
+
+# Planet vertices for icosphere (level 0)
+# These are the vertices of a regular icosahedron inscribed in a unit sphere
+t = (1 + math.sqrt(5)) / 2
+vertices = [
+    [-1, t, 0], [1, t, 0], [-1, -t, 0], [1, -t, 0],
+    [0, -1, t], [0, 1, t], [0, -1, -t], [0, 1, -t],
+    [t, 0, -1], [t, 0, 1], [-t, 0, -1], [-t, 0, 1]
+]
+
+# Planet faces (triangles)
+faces = [
+    [0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
+    [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
+    [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
+    [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]
+]
+
+def rotate_point(x, y, z, pitch_angle, yaw_angle):
+    # First rotate around X axis (pitch)
+    cos_p = math.cos(pitch_angle)
+    sin_p = math.sin(pitch_angle)
+    y2 = y * cos_p - z * sin_p
+    z2 = y * sin_p + z * cos_p
+    
+    # Then rotate around Y axis (yaw)
+    cos_y = math.cos(yaw_angle)
+    sin_y = math.sin(yaw_angle)
+    x2 = x * cos_y + z2 * sin_y
+    z3 = -x * sin_y + z2 * cos_y
+    
+    return x2, y2, z3
+
+# Initialize stars
+def init_stars(num_stars):
+    stars = []
+    for _ in range(num_stars):
+        # Stars are now 2D points on a sphere around the camera
+        # We'll use angles to position them
+        azimuth = random.uniform(0, 2 * math.pi)  # Horizontal angle
+        elevation = random.uniform(-math.pi/2, math.pi/2)  # Vertical angle
+        stars.append([azimuth, elevation])
+    return stars
+
+def project_point(x, y, z):
+    # Apply rotation first
+    x, y, z = rotate_point(x, y, z, pitch, yaw)
+    
+    # Simple perspective projection
+    z_diff = (z - camera_z)
+    # Prevent division by zero by ensuring minimum distance
+    if abs(z_diff) < 0.001:
+        z_diff = 0.001 if z_diff >= 0 else -0.001
+    scale = 1000 / z_diff
+    screen_x = x * scale
+    screen_y = y * scale
+    return screen_x, screen_y, scale
+
+def draw_planet():
+    # Draw each face of the icosphere
+    planet_scale = 100
+    for face in faces:
+        # Get the three vertices of the face
+        v1 = [v * planet_scale for v in vertices[face[0]]]
+        v2 = [v * planet_scale for v in vertices[face[1]]]
+        v3 = [v * planet_scale for v in vertices[face[2]]]
+        
+        # Project the vertices to screen space
+        x1, y1, s1 = project_point(v1[0], v1[1], v1[2])
+        x2, y2, s2 = project_point(v2[0], v2[1], v2[2])
+        x3, y3, s3 = project_point(v3[0], v3[1], v3[2])
+        
+        # Draw the triangle edges
+        screen.draw_line(x1, y1, x2, y2)
+        screen.draw_line(x2, y2, x3, y3)
+        screen.draw_line(x3, y3, x1, y1)
+
+def draw_stars(stars):
+    # Constants for star field
+    sphere_radius = 1000  # Radius of our imaginary star sphere
+    
+    for star in stars:
+        azimuth = star[0]
+        elevation = star[1]
+        
+        # Adjust star position based on camera rotation
+        adjusted_azimuth = azimuth - yaw
+        adjusted_elevation = elevation - pitch
+        
+        # Convert spherical coordinates to screen coordinates
+        # This creates a wraparound effect as you rotate
+        x = sphere_radius * math.cos(adjusted_elevation) * math.sin(adjusted_azimuth)
+        y = sphere_radius * math.sin(adjusted_elevation)
+        
+        # Simple scaling for perspective
+        scale = 1.0
+        screen_x = x * scale
+        screen_y = y * scale
+        
+        # Only draw if within screen bounds
+        if -512 <= screen_x <= 512 and -512 <= screen_y <= 512:
+            screen.draw_dot(screen_x, screen_y)
+
+def engine_noise(f):
+    tone(1, 17, 3, f, 0.01)
+
+def handle_input():
+    global camera_x, camera_y, camera_z, pitch, yaw
+    keys = pg.key.get_pressed()
+    
+    # Camera movement
+    if keys[pg.K_w]:
+        engine_noise(5)
+        camera_z += 5
+    if keys[pg.K_s]:
+        engine_noise(7)
+        camera_z -= 5
+        
+    # Rotation controls
+    rotation_speed = 0.005
+    if keys[pg.K_a]:  # Yaw left
+        engine_noise(8)
+        yaw -= rotation_speed
+    if keys[pg.K_d]:  # Yaw right
+        engine_noise(4)
+        yaw += rotation_speed
+    if keys[pg.K_q]:  # Pitch up
+        engine_noise(2)
+        pitch -= rotation_speed
+    if keys[pg.K_e]:  # Pitch down
+        engine_noise(6)
+        pitch += rotation_speed
+
+def main():
+    stars = init_stars(512)
+    running = True
+    
+    while running:
+        screen.clear()
+        
+        # Handle input
+        handle_input()
+        
+        # Draw stars and planet
+        draw_stars(stars)
+        draw_planet()
+        
+        # Update display
+        screen.update()
+        time.sleep(0.016)  # Cap at ~60 FPS
+        
+        # Handle events
+        for get_events:
+            if quit_event:
+                running = False
+            elif resize_event:
+                screen.handle_resize(event)
+            elif key_down_event:
+                if special_key:
+                    running = False
+
+main()

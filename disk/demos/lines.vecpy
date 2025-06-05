@@ -1,0 +1,75 @@
+
+
+import main
+import screen
+import random
+import aliases
+import math
+import time
+
+#uses lines to draw the noise pattern.
+
+points = []
+NUM_POINTS = 16
+
+def init_points():
+    global points
+    points = []
+    for _ in range(NUM_POINTS):
+        x = random.randint(-256, 256)
+        y = random.randint(-256, 256)
+        dx = random.uniform(-2, 2)
+        dy = random.uniform(-2, 2)
+        points.append([x, y, dx, dy])
+
+def update_points():
+    for point in points:
+        # Update position based on velocity
+        point[0] += point[2]
+        point[1] += point[3]
+        
+        # Bounce off edges
+        if point[0] < -256 or point[0] > 256:
+            point[2] *= -1
+        if point[1] < -256 or point[1] > 256:
+            point[3] *= -1
+
+def render():
+    # Draw connections between points
+    for i, p1 in enumerate(points):
+        for j, p2 in enumerate(points[i+1:], i+1):
+            # Calculate midpoint
+            mx = (p1[0] + p2[0]) / 2
+            my = (p1[1] + p2[1]) / 2
+            
+            # Draw line between points if they're close enough
+            dist = math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
+            if dist < 200:  # Only draw lines between nearby points
+                screen.draw_line(p1[0], p1[1], mx, my)
+                screen.draw_line(mx, my, p2[0], p2[1])
+        
+        # Draw the point itself
+        screen.draw_dot(p1[0], p1[1])
+
+def main():
+    init_points()
+    running = True
+    while running:
+        time.sleep(0.01)
+        screen.clear()
+        update_points()
+        render()
+        screen.update()
+        
+        for get_events:
+            if quit_event:
+                running = False
+            elif resize_event:
+                screen.handle_resize(event)
+            elif key_down_event:
+                if special_key:
+                    running = False
+                elif key_SPACE:
+                    init_points()  # Reset points when space is pressed
+
+main()
