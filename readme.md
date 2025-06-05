@@ -27,7 +27,7 @@ VectorMaster is a vector graphics engine that allows you to create and run vecto
 ### Demo Programs
 - **Starfield**: Dynamic star field simulation with trailing effects
 - **Lines**: Interactive line-based noise pattern generator
-- **Dots**: Random dot pattern generator with connecting lines
+- **Dots**: Random dot pattern generator
 - **Waveform**: Interactive audio waveform editor and visualizer
 - **Elite Demo**: 3D wireframe planet renderer with camera controls
 - **Toby Fox**: Undertale/Deltarune-style battle system demo
