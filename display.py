@@ -72,15 +72,18 @@ class Display:
             
         return x, y
 
-    def draw_character(self, x, y, character, scale):
-        if character not in characters_instance.characters:
-            return
+    def draw_character(self, x, y, character, scale=1, debug_dots=False, no_penup=False):
+        if character not in characters_instance.char_dict:
+            return '?'
         
         character = character.lower()
-        instructions = characters_instance.characters[character]
+        instructions = characters_instance.char_dict[character]
         current_x, current_y = self.wrap_character_position(x, y, scale)
         drawing = False
         
+        if debug_dots:
+            self.draw_dot(current_x * scale, current_y * scale)
+
         for instruction in instructions:
             next_x, next_y = current_x, current_y
             
@@ -95,7 +98,8 @@ class Display:
             elif instruction == 'b':
                 drawing = True
             elif instruction == 'e':
-                drawing = False
+                if not no_penup:
+                    drawing = False
             elif instruction == '/':
                 next_x += 8
                 next_y += 8
@@ -112,7 +116,7 @@ class Display:
             
             current_x, current_y = next_x, next_y
 
-    def draw_string(self, x, y, string, scale):
+    def draw_string(self, x, y, string, scale=1, debug_dots=False, no_penup=False):
         space = 16
         for char in string.lower():
             if char == 'm' or char == 'w':
@@ -121,15 +125,20 @@ class Display:
                 space = 16
             
             # Draw the character at wrapped position
-            x, y = self.wrap_character_position(x, y, scale)
-            self.draw_character(x, y, char, scale)
+            wrapped_x, wrapped_y = self.wrap_character_position(x, y, scale)
+            self.draw_character(wrapped_x, wrapped_y, char, scale, debug_dots, no_penup)
             
             # Move to next character position
             x += space / scale
-            # If we're past the right edge, move to next line
-            if x * scale > self.BASE_WIDTH / 2:
+            
+            # Check if the next character would be past the right edge
+            if x * scale > self.BASE_WIDTH / 2 - space:
                 x = -self.BASE_WIDTH / (2 * scale)
                 y -= 24  # Move down one line
+            
+            # Also check if somehow we're past the left edge
+            if x * scale < -self.BASE_WIDTH / 2:
+                x = -self.BASE_WIDTH / (2 * scale)
 
     def handle_resize(self, event):
         self.screen = pg.display.set_mode((event.w, event.h), pg.RESIZABLE)

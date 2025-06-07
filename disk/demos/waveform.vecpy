@@ -1,9 +1,6 @@
 #Waveform visualizer
 
-import main
-import screen
-import aliases
-import audio
+import essentials
 import time
 import random
 
@@ -23,6 +20,9 @@ def validate_values():
     # If noise is selected, clamp frequency to 1-8
     if values[1] == 17:
         values[3] = max(1, min(8, values[3]))
+    if values[1] < 17:
+        if values[3] <= 8:
+            values[3] = 440
 
 def get_wave_display(channel, wave):
     if wave == 17:  # Noise

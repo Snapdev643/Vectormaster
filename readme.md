@@ -25,13 +25,15 @@ VectorMaster is a vector graphics engine that allows you to create and run vecto
 - Frequency control (20-1600 Hz)
 
 ### Demo Programs
-- **Starfield**: Dynamic star field simulation with trailing effects
-- **Lines**: Interactive line-based noise pattern generator
-- **Dots**: Random dot pattern generator
-- **Waveform**: Interactive audio waveform editor and visualizer
+- **Starfield**: Starfield with trailing effects
+- **Lines**: Cool line patterns
+- **Dots**: Random dots
+- **Waveform**: Audio waveform editor and visualizer
 - **Elite Demo**: 3D wireframe planet renderer with camera controls
-- **Toby Fox**: Undertale/Deltarune-style battle system demo
+- **Notepad**: A simple notepad
+- **Toby Fox**: A very buggy Undertale/Deltarune-style battle system demo
 - **Music**: A test script for playing music
+- **Sorting**: A sorting algorithm demo
 
 ### Input Handling
 - Keyboard input support
@@ -60,3 +62,7 @@ VectorMaster is a vector graphics engine that allows you to create and run vecto
 - Ctrl+B: Force quit running program
 - Space: Reset/Restart (in supported demos)
 
+## Changelog:
+
+- 0.1.0: Initial release
+- 0.1.1: Added import essentials (adds main, screen, audio, and aliases), a sorting demo, a characters demo, separated and updated the file explorer and main program, debug_dots and no_penup added to draw_string and draw_character, improved string wrapping, and updated the bios sounds.

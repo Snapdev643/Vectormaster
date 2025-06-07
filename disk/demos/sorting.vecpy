@@ -1,0 +1,68 @@
+#bubble sorting display
+
+import essentials
+import random
+import math
+import time
+
+data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31] #32 elements
+
+random.shuffle(data)
+
+def swap_noise(i):
+    tone(0, 11, 8, 220 + i * 10, 0.01)
+
+def finished_melody():
+    melody = [82, 110, 165, 262, 220] #E2, A2, E3, C4, A3
+    for note in melody:
+        tone(0, 9, 8, note, 0.01)
+        time.sleep(0.1)
+
+# Keep track of our position in the sorting algorithm
+i = 0
+j = 0
+
+def main():
+    global i, j
+    running = True
+    sorting = True
+    while running:
+        for get_events:
+            if quit_event:
+                running = False
+            if resize_event:
+                screen.handle_resize(event)
+            if key_down_event:
+                if special_key:
+                    running = False
+                if key_SPACE:
+                    random.shuffle(data)
+                    sorting = True
+                    i = 0
+                    j = 0
+        
+        # Do one comparison step of bubble sort
+        if sorting:
+            if j < len(data) - i - 1:
+                if data[j] > data[j + 1]:
+                    data[j], data[j + 1] = data[j + 1], data[j]
+                    swap_noise(j)
+                j += 1
+            else:
+                j = 0
+                i += 1
+                if i >= len(data):
+                    sorting = False
+                    finished_melody()
+        
+        screen.clear()
+        scale = 16  # Scale factor for width
+        height_scale = 8  # Scale factor for height
+        for k in range(len(data)):
+            x = (k * scale) - 240  # Centered better on screen
+            screen.draw_line(x, -256, x, data[k] * height_scale - 128)  # Adjusted height scaling and centering
+        screen.draw_string(-256, 240, "Bubble sort- Space: shuffle", 1)
+        screen.update()
+        time.sleep(0.1)
+
+main()

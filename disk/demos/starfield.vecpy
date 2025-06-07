@@ -1,8 +1,6 @@
-import main
-import screen
+import essentials
 import random
 import time
-import aliases
 
 def init_stars(num, maxZ):
     stars = []

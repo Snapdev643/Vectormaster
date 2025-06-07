@@ -1,0 +1,44 @@
+import essentials
+from characters import Characters as c
+
+characters = c()
+
+key_delay(500, 100)
+
+#draw the characters and their instructions (up/down to change character)
+def main():
+    scroll = 0
+    no_penup = False
+    debug_dots = False
+    char_list = list(characters.char_dict.keys())
+    max_scroll = len(char_list) - 1  # No need to subtract 2 anymore
+    running = True
+    while running:
+        for get_events:
+            if quit_event:
+                running = False
+            if resize_event:
+                screen.handle_resize(event)
+            if key_down_event:
+                if special_key:
+                    running = False
+                if key_UP:
+                    scroll = max(0, scroll - 1)
+                if key_DOWN:
+                    scroll = min(max_scroll, scroll + 1)
+                if key_SPACE:
+                    no_penup = not no_penup
+                if key_d:
+                    debug_dots = not debug_dots
+        screen.clear()
+        current_char = char_list[scroll]
+        screen.draw_string(-256, 240, "U: up, D: down, L: left, R: right, B: begin, E: end, /: up/right, \\: down/left", 1)
+        screen.draw_string(-256, 0, "Character: ", 1)
+        screen.draw_string(-256 + len("Character: ") * 20, 0, str(current_char), 2, debug_dots, no_penup)
+        screen.draw_string(-256, -24, "Instructions: " + str(characters.char_dict[current_char]), 1)
+        screen.draw_string(-256, -216, "D: debug dots, SPC: no penup,", 1)
+        screen.draw_string(-256, -240, "UP/DOWN: scroll, SPCL: quit", 1)
+        screen.update()
+
+main()
+

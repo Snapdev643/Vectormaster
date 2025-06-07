@@ -1,9 +1,5 @@
-
-
-import main
-import screen
+import essentials
 import random
-import aliases
 import math
 import time
 

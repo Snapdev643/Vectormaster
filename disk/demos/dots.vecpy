@@ -3,27 +3,24 @@
 
 #it uses most of the same syntax as Python, but it uses the Vector engine's functions instead of Python's.
 
-import main
-import screen
-import random
-import aliases #neccessary unless you want to add them manually for some reason. Needs to be the last import.
+import essentials #neccessary unless you want to add modules manually for some reason.
+import random #Other modules are optional.
 
-screen.type(-256, 240, "Test Program!", 1)
+screen.type(-256, 240, "Test Program!", 1) #draws a string at the top of the screen. You can also use screen.draw_string() instead.
 
 
-def main():
-    running = True
-    while running:
-        screen.draw_dot(random.randint(-512, 512), random.randint(-512, 512))
-        screen.update()
-        for get_events:
-            if quit_event:
-                running = False
-            elif resize_event:
-                screen.handle_resize(event)
-            elif key_down_event:
-                if special_key:
-                    running = False
-    stop()
+def main(): #Main function.
+    running = True #needed
+    while running: #needed
+        screen.draw_dot(random.randint(-512, 512), random.randint(-512, 512)) #draws a dot at a random position.
+        screen.update() #updates the screen.
+        for get_events: #the following code is needed for the program to work.
+            if quit_event: #if the user quits the program.
+                running = False #stops the program.
+            elif resize_event: #if the user resizes the window.
+                screen.handle_resize(event) #resizes the screen to the new size.
+            elif key_down_event: #checks for key presses.
+                if special_key: #if the user presses the special key.
+                    running = False #stops the program.
 
-main()
+main() #runs the program.

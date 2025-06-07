@@ -4,7 +4,7 @@
 
 class Characters:
     def __init__(self):
-        self.characters = {
+        self.char_dict = {
             #example: for 'a' the instructions are: begin, up, up, right, down, left, end, right, begin, down, end, stop
             'a': 'buurdlerbdes',
             'b': 'buureldb/eldb\\les',
@@ -68,5 +68,6 @@ class Characters:
             '/': 'b/elb/es',
             '\\': 'uub\\elb\\es',
             '|': 'uurbddes',
-            '♥': 'uub\\/uldeubldes'
+            '♥': 'uub\\/uldeubldes',
+            '😀': 'uub.errb.edllb\\/es'
         }

@@ -1,7 +1,4 @@
-import main
-import screen
-import audio
-import aliases
+import essentials
 import time
 
 bpm = 150

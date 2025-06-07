@@ -1,7 +1,4 @@
-import main
-import screen
-import aliases
-import audio
+import essentials
 import time
 import random
 import math

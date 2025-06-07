@@ -1,11 +1,8 @@
 #undertale/deltarune type fight
 
-import main
-import screen
-import aliases
+import essentials
 import time
 import random
-import audio
 
 # Enable key repeating - first number is the delay before repeating starts (in ms),
 # second number is the interval between repeats (in ms)
