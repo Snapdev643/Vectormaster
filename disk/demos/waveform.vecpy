@@ -10,27 +10,27 @@ import random
 cursorpos = 0
 params = ['Channel', 'Wave', 'Volume', 'Freq', 'Duration']
 values = [0, 0, 15, 440, 0.1]
-param_ranges = [(0, 1), (0, 17), (0, 15), (20, 1600), (0.05, 2.0)]
+param_ranges = [(0, 1), (0, 16), (0, 15), (20, 1600), (0.05, 2.0)]
 
 def validate_values():
     global values
     # If on channel 0, ensure wave is not noise
-    if values[0] == 0 and values[1] == 17:
+    if values[0] == 0 and values[1] == 16:
         values[1] = 0  # Reset to sine wave
     # If noise is selected, clamp frequency to 1-8
-    if values[1] == 17:
+    if values[1] == 16:
         values[3] = max(1, min(8, values[3]))
-    if values[1] < 17:
+    if values[1] < 16:
         if values[3] <= 8:
             values[3] = 440
 
 def get_wave_display(channel, wave):
-    if wave == 17:  # Noise
+    if wave == 16:  # Noise
         return 'N'
     return str(wave)  # Display wave number for all other waves
 
 def get_freq_display():
-    if values[1] == 17:  # If noise
+    if values[1] == 16:  # If noise
         return str(int(min(8, max(1, values[3]))))  # Show as integer 1-8
     return str(values[3])  # Show normal frequency
 
@@ -52,7 +52,7 @@ def waveform_editor():
         y -= 32
 
 def visualizer():
-    if values[1] == 17:  # Noise visualization
+    if values[1] == 16:  # Noise visualization
         # Generate a noisy pattern
         points = []
         num_points = 32
@@ -95,11 +95,11 @@ def adjust_value(delta):
     if cursorpos == 1:  # Wave selection
         new_val = values[1] + delta
         # Only allow noise on channel 1
-        if values[0] == 0 and new_val == 17:
+        if values[0] == 0 and new_val == 16:
             new_val = 0 if delta > 0 else 4
         values[1] = max(min_val, min(max_val, new_val))
     elif cursorpos == 3:  # Frequency/noise length
-        if values[1] == 17:  # Noise
+        if values[1] == 16:  # Noise
             delta = 1 if delta > 0 else -1  # Always move by 1 for noise length
             new_val = max(1, min(8, values[3] + delta))
         else:  # Normal frequency
@@ -127,7 +127,7 @@ def main():
         #channel value display
         screen.draw_string(-256, -224, "U/D: Sel, L/R: Val, Enter: Play", 1)
         screen.draw_string(-256, -240, "Spcl: Exit", 1)
-        if values[1] == 17:
+        if values[1] == 16:
             screen.draw_string(-256, -208, "Noise: 1-8 Speed", 1)
         screen.update()
         
@@ -153,7 +153,7 @@ def main():
                     tone(0, 1, 8, 220, 0.01)
                 elif key_RETURN:
                     # Play the current waveform
-                    wave_idx = 17 if values[1] == 17 else values[1]  # Use wave index 17 for noise
+                    wave_idx = 16 if values[1] == 16 else values[1]  # Use wave index 16 for noise
                     tone(values[0], wave_idx, values[2], values[3], values[4])
 
 main()

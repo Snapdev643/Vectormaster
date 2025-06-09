@@ -1,0 +1,57 @@
+#Notepad program
+
+import essentials
+import time
+import random
+import os
+
+def blip():
+    tone(0, 1, 15, random.randint(100, 210), 0.01)
+    time.sleep(0.01)
+
+key_delay(500, 50)
+
+
+def main():
+    text = ""
+    running = True
+    while running:
+        screen.clear()
+        for get_events:
+            if quit_event:
+                running = False
+            elif resize_event:
+                screen.handle_resize(event)
+            elif key_down_event:
+                if special_key:
+                    running = False
+                elif key_BACKSPACE:
+                    tone(1, 17, 8, 8, 0.01)
+                    text = text[:-1]
+                elif key_s and init_mods & keymod_CTRL:
+                    with open("notepadSave.txt", "w") as file:
+                        file.write(text)
+                    print("Saved to notepadSave.txt")
+                elif key_o and init_mods & keymod_CTRL:
+                    if os.path.exists("notepadSave.txt"):
+                        with open("notepadSave.txt", "r") as file:
+                            text = file.read()
+                            print("Loaded from notepadSave.txt")
+                    else:
+                        print("notepadSave.txt not found")
+                        tone(0, 3, 8, 100, 0.5)
+                elif key_n and init_mods & keymod_CTRL:
+                    if os.path.exists("notepadSave.txt"):
+                        os.remove("notepadSave.txt")
+                        print("notepadSave.txt deleted")
+                    else:
+                        print("nothing to delete")
+                    text = ""
+                else:
+                    blip()
+                    text += event.unicode
+        screen.draw_string(-256, 240, text + "_", 1)
+        screen.update()
+
+main()
+

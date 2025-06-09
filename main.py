@@ -11,7 +11,7 @@ characters_instance = c()
 parser = VecPyParser()
 audio = a()
 
-pg.key.set_repeat() #no key repeat (makes weird noises!)
+pg.key.set_repeat() #no key repeat, please! (makes weird noises! and an unusable UI!)
 
 def bios():
     if os.path.exists("temp.py"):
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         while True:
             pg.key.set_repeat()
             try:
-                parser.parse_keys("FE.vecpy")
+                parser.parse_keys("FE.vecpyh")
                 parser.run()
                 print("Running the file explorer...")
             except SystemExit:

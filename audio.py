@@ -11,7 +11,7 @@ class Audio:
         self.amplitude = 32767  # Maximum amplitude for 16-bit audio
         self.wave_length = 16   # Length of each waveform pattern
         
-        # Pre-defined waveform patterns (values from 0 to 16)
+        # 17 pre-defined waveform patterns (values from 0 to 16)
         self.waves = {
             '0': [8, 5, 2, 1, 0, 1, 2, 5, 8, 10, 13, 14, 15, 14, 13, 10],  # sine
             '1': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],   # sawtooth
@@ -29,8 +29,7 @@ class Audio:
             '13': [8, 5, 10, 3, 11, 1, 13, 0, 15, 1, 13, 3, 11, 5, 6, 6], #harmonics 2
             '14': [0, 0, 0, 2, 8, 14, 4, 10, 0, 6, 12, 2, 8, 14, 15, 15], #guitar1
             '15': [0, 15, 0, 15, 0, 15, 15, 0, 15, 15, 15, 15, 15, 15, 15, 15], #guitar2
-            '16': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #silence
-            '17': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #noise
+            '16': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], #Noise
         }
 
         # Pre-generate normalized wave tables for faster lookup
@@ -42,9 +41,6 @@ class Audio:
 
         # Channel state: [wave_index, volume (0-15), frequency, is_playing]
         self.channels = [[0, 0, 440.0, False], [0, 0, 440.0, False]]
-        
-        # Pre-generate noise samples (0 to 15)
-        self.noise_buffer = (np.random.uniform(-self.amplitude, self.amplitude, self.sample_rate)).astype(np.float32)
         
         # Sound buffer length (1/60th of a second for 60fps)
         self.buffer_samples = self.sample_rate // 60
@@ -74,19 +70,26 @@ class Audio:
 
             # Use cached samples if available for this frequency and wave
             cache_key = (str(wave_idx), frequency)
-            if cache_key in self.sample_cache:
+            if cache_key in self.sample_cache and str(wave_idx) != '16':  # Don't cache noise
                 channel_samples = self.sample_cache[cache_key][:num_samples]
             else:
-                # Calculate samples per wave cycle
+                # Calculate samples per cycle
                 samples_per_cycle = self.sample_rate / frequency
                 
                 # Generate time points
                 t = np.arange(num_samples)
                 
-                if str(wave_idx) == '17':  # Noise channel
-                    # Use pre-generated noise, cycling through the buffer
-                    start_idx = int(time.time() * frequency) % (self.sample_rate - num_samples)
-                    channel_samples = self.noise_buffer[start_idx:start_idx + num_samples]
+                if str(wave_idx) == '16':  # Noise channel
+                    # Generate fresh noise samples with frequency-based filtering
+                    noise = np.random.uniform(-self.amplitude, self.amplitude, num_samples)
+                    if frequency <= 8:  # Use frequency as a noise color parameter (1-8)
+                        # Apply simple low-pass filter based on frequency
+                        # Lower frequency = more filtering
+                        filter_size = int((9 - frequency) * 8)  # More filtering for lower frequencies
+                        if filter_size > 1:
+                            kernel = np.ones(filter_size) / filter_size
+                            noise = np.convolve(noise, kernel, mode='same')
+                    channel_samples = noise
                 else:
                     # Get pre-normalized wave table
                     wave_table = self.wave_tables.get(str(wave_idx), self.wave_tables['0'])
@@ -97,8 +100,9 @@ class Audio:
                     # Get samples from wave pattern
                     channel_samples = wave_table[pattern_indices]
 
-                    # Cache the generated samples
-                    self.sample_cache[cache_key] = channel_samples.copy()
+                    # Cache the generated samples (except noise)
+                    if str(wave_idx) != '16':
+                        self.sample_cache[cache_key] = channel_samples.copy()
             
             # Apply volume scaling
             channel_samples = channel_samples * (volume / 15.0)

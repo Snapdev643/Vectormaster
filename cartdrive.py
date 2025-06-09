@@ -26,7 +26,9 @@ class VecPyParser:
             'resize_event': 'event.type == pg.VIDEORESIZE',
             'key_down_event': 'event.type == pg.KEYDOWN',
             'key_': 'event.key == pg.K_',
-            'special_key': 'event.key == pg.K_b and pg.key.get_mods() & pg.KMOD_CTRL'
+            'special_key': 'event.key == pg.K_b and pg.key.get_mods() & pg.KMOD_CTRL',
+            'init_mods': 'pg.key.get_mods()',
+            'keymod_': 'pg.KMOD_'
         }
     def parse_keys(self, filename): #take all the lines, parse them, remove comments, and put them into a temporary file
         file_path = os.path.join(diskpath, filename)
