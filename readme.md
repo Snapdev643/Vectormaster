@@ -66,4 +66,4 @@ VectorMaster is a vector graphics engine that allows you to create and run vecto
 
 - 0.0.1: Initial release (06/04/25)
 - 0.0.2: Added import essentials (adds main, screen, audio, and aliases), a sorting demo, a characters demo, separated and updated the file explorer and main program, debug_dots and no_penup added to draw_string and draw_character, improved string wrapping, and updated the bios sounds. (06/06/25)
-- 0.0.3: Improved noise generation, added a sprite drawer, removed the silent waveform, updated and made the notepad demo into a system program, added the ability to make hidden files that won't be shown in the file explorer (.vecpyh) and added init_mods & keymod_ for the parser. (06/07/25)
+- 0.0.3: Improved noise generation, added a sprite drawer, removed the silent waveform, updated and made the notepad demo into a system program, added the ability to make hidden files that won't be shown in the file explorer (.vecpyh) and added init_mods & keymod_ for the parser. (06/08/25)
