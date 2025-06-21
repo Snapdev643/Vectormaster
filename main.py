@@ -13,6 +13,7 @@ audio = a()
 
 pg.key.set_repeat() #no key repeat, please! (makes weird noises! and an unusable UI!)
 
+
 def bios():
     if os.path.exists("temp.py"):
         os.remove("temp.py")

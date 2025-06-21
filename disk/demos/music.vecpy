@@ -70,4 +70,8 @@ def main():
         
         if song_position >= 0:
             update_song()
+        else:
+            screen.clear()
+            screen.draw_string(-256, -240, "Done", 1)
+            screen.update()
 main()

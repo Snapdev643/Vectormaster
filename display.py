@@ -116,7 +116,7 @@ class Display:
             
             current_x, current_y = next_x, next_y
 
-    def draw_string(self, x, y, string, scale=1, debug_dots=False, no_penup=False):
+    def draw_string(self, x, y, string, scale=1, debug_dots=False, no_penup=False, center_x=False):
         space = 16
         for char in string.lower():
             if char == 'm' or char == 'w':
@@ -125,7 +125,7 @@ class Display:
                 space = 16
             
             # Draw the character at wrapped position
-            wrapped_x, wrapped_y = self.wrap_character_position(x, y, scale)
+            wrapped_x, wrapped_y = self.wrap_character_position(x if not center_x else x - len(string) * 8, y, scale)
             self.draw_character(wrapped_x, wrapped_y, char, scale, debug_dots, no_penup)
             
             # Move to next character position

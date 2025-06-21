@@ -1,6 +1,9 @@
 #converts a drawing of lines and dots on a grid into a list of functions to be used in programs
 import pygame as pg
 import math
+import os
+from tkinter import filedialog
+import tkinter as tk
 
 class SpriteDrawer:
     def __init__(self, width=512, height=512):
@@ -24,6 +27,18 @@ class SpriteDrawer:
         self.show_grid = True
         self.sprite_name = "sprite"  # Default name
         
+        # Reference image properties
+        self.reference_image = None
+        self.reference_surface = None
+        self.show_reference = True
+        self.reference_alpha = 128  # 0-255, controls image transparency
+        self.ref_x = 0  # Position offset for reference image
+        self.ref_y = 0
+        self.ref_scale = 1.0  # Scale factor for reference image
+        self.dragging_image = False
+        self.drag_start = None
+        self.initial_ref_pos = None
+        
         # Center offset (in grid units)
         self.center_x = width // (2 * self.grid_size) * self.grid_size
         self.center_y = height // (2 * self.grid_size) * self.grid_size
@@ -39,6 +54,45 @@ class SpriteDrawer:
         screen_x = self.center_x + grid_x * self.grid_size
         screen_y = self.center_y - grid_y * self.grid_size  # Flip Y axis
         return screen_x, screen_y
+
+    def find_closest_line_or_point(self, mouse_x, mouse_y, threshold=10):
+        """Find the closest line or point to the given mouse coordinates"""
+        closest_dist = float('inf')
+        closest_idx = -1
+        is_point = False
+
+        mouse_grid_x, mouse_grid_y = self.screen_to_grid(mouse_x, mouse_y)
+        mouse_screen_x, mouse_screen_y = self.grid_to_screen(mouse_grid_x, mouse_grid_y)
+
+        for idx, line in enumerate(self.points):
+            if len(line) == 1:  # Single point
+                px, py = self.grid_to_screen(*line[0])
+                dist = math.sqrt((px - mouse_x)**2 + (py - mouse_y)**2)
+                if dist < closest_dist and dist < threshold:
+                    closest_dist = dist
+                    closest_idx = idx
+                    is_point = True
+            else:  # Line
+                x1, y1 = self.grid_to_screen(*line[0])
+                x2, y2 = self.grid_to_screen(*line[1])
+                
+                # Calculate distance to line segment
+                line_length = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+                if line_length == 0:
+                    continue
+                
+                # Calculate the distance from point to line segment
+                t = max(0, min(1, ((mouse_x - x1) * (x2 - x1) + (mouse_y - y1) * (y2 - y1)) / (line_length * line_length)))
+                proj_x = x1 + t * (x2 - x1)
+                proj_y = y1 + t * (y2 - y1)
+                dist = math.sqrt((mouse_x - proj_x)**2 + (mouse_y - proj_y)**2)
+                
+                if dist < closest_dist and dist < threshold:
+                    closest_dist = dist
+                    closest_idx = idx
+                    is_point = False
+
+        return closest_idx, is_point if closest_idx != -1 else None
 
     def draw_grid(self):
         """Draw the grid lines"""
@@ -110,6 +164,78 @@ class SpriteDrawer:
         
         return '\n'.join(lines)
 
+    def load_reference_image(self):
+        """Open a file dialog to load a reference image"""
+        root = tk.Tk()
+        root.withdraw()  # Hide the main window
+        file_path = filedialog.askopenfilename(
+            title="Select Reference Image",
+            filetypes=[
+                ("Image files", "*.png *.jpg *.jpeg *.bmp *.gif"),
+                ("All files", "*.*")
+            ]
+        )
+        root.destroy()
+        
+        if file_path:
+            try:
+                # Load the image and convert it to have an alpha channel
+                self.reference_image = pg.image.load(file_path).convert_alpha()
+                # Store original size for scaling
+                self.original_width = self.reference_image.get_width()
+                self.original_height = self.reference_image.get_height()
+                # Center the image initially
+                self.ref_x = (self.width - self.original_width) // 2
+                self.ref_y = (self.height - self.original_height) // 2
+                self.ref_scale = 1.0
+                self.update_reference_surface()
+                return True
+            except Exception as e:
+                print(f"Error loading image: {e}")
+                return False
+        return False
+
+    def update_reference_surface(self):
+        """Update the reference surface with current alpha value and scale"""
+        if self.reference_image:
+            # Calculate new dimensions
+            new_width = int(self.original_width * self.ref_scale)
+            new_height = int(self.original_height * self.ref_scale)
+            
+            # Scale the image
+            scaled_image = pg.transform.scale(self.reference_image, (new_width, new_height))
+            
+            # Apply transparency
+            self.reference_surface = scaled_image.copy()
+            self.reference_surface.fill((255, 255, 255, self.reference_alpha), special_flags=pg.BLEND_RGBA_MULT)
+
+    def draw_reference_image(self):
+        """Draw the reference image if it exists and is visible"""
+        if self.reference_surface and self.show_reference:
+            self.screen.blit(self.reference_surface, (self.ref_x, self.ref_y))
+
+    def handle_image_drag(self, mouse_pos, is_start=False, is_end=False):
+        """Handle dragging of the reference image"""
+        if not self.reference_surface or not self.show_reference:
+            return
+
+        if is_start:
+            # Check if click is within image bounds
+            img_rect = self.reference_surface.get_rect(topleft=(self.ref_x, self.ref_y))
+            if img_rect.collidepoint(mouse_pos):
+                self.dragging_image = True
+                self.drag_start = mouse_pos
+                self.initial_ref_pos = (self.ref_x, self.ref_y)
+        elif is_end:
+            self.dragging_image = False
+        elif self.dragging_image:
+            # Calculate the difference from drag start
+            dx = mouse_pos[0] - self.drag_start[0]
+            dy = mouse_pos[1] - self.drag_start[1]
+            # Update image position
+            self.ref_x = self.initial_ref_pos[0] + dx
+            self.ref_y = self.initial_ref_pos[1] + dy
+
     def run(self):
         running = True
         clock = pg.time.Clock()
@@ -121,23 +247,41 @@ class SpriteDrawer:
                     
                 elif event.type == pg.MOUSEBUTTONDOWN:
                     if event.button == 1:  # Left click
+                        if pg.key.get_mods() & pg.KMOD_ALT:  # Alt + Left click for image drag
+                            self.handle_image_drag(event.pos, is_start=True)
+                        else:  # Normal drawing
+                            mouse_x, mouse_y = pg.mouse.get_pos()
+                            grid_x, grid_y = self.screen_to_grid(mouse_x, mouse_y)
+                            if not self.start_point:
+                                self.start_point = (grid_x, grid_y)
+                            else:
+                                self.points.append([self.start_point, (grid_x, grid_y)])
+                                self.start_point = None
+                                self.preview_end = None
+                    elif event.button == 2:  # Middle click - delete line/point
                         mouse_x, mouse_y = pg.mouse.get_pos()
-                        grid_x, grid_y = self.screen_to_grid(mouse_x, mouse_y)
-                        
-                        if not self.start_point:  # First point of line
-                            self.start_point = (grid_x, grid_y)
-                        else:  # Second point of line
-                            # Add the completed line
-                            self.points.append([self.start_point, (grid_x, grid_y)])
-                            self.start_point = None
-                            self.preview_end = None
-                            
+                        closest_idx, is_point = self.find_closest_line_or_point(mouse_x, mouse_y)
+                        if closest_idx != -1:
+                            self.points.pop(closest_idx)
                     elif event.button == 3:  # Right click - place single dot
                         mouse_x, mouse_y = pg.mouse.get_pos()
                         grid_x, grid_y = self.screen_to_grid(mouse_x, mouse_y)
-                        self.points.append([(grid_x, grid_y)])  # Add as single-point line
+                        self.points.append([(grid_x, grid_y)])
+                    elif event.button == 4:  # Mouse wheel up - scale up reference image
+                        if pg.key.get_mods() & pg.KMOD_ALT:
+                            self.ref_scale = min(5.0, self.ref_scale * 1.1)
+                            self.update_reference_surface()
+                    elif event.button == 5:  # Mouse wheel down - scale down reference image
+                        if pg.key.get_mods() & pg.KMOD_ALT:
+                            self.ref_scale = max(0.1, self.ref_scale / 1.1)
+                            self.update_reference_surface()
+                            
+                elif event.type == pg.MOUSEBUTTONUP:
+                    if event.button == 1:
+                        self.handle_image_drag(event.pos, is_end=True)
                             
                 elif event.type == pg.MOUSEMOTION:
+                    self.handle_image_drag(event.pos)
                     if self.start_point:  # Update preview end point
                         mouse_x, mouse_y = pg.mouse.get_pos()
                         grid_x, grid_y = self.screen_to_grid(mouse_x, mouse_y)
@@ -156,7 +300,7 @@ class SpriteDrawer:
                         print("\nUse this function in your VecPy program!")
                     elif event.key == pg.K_n:  # Change sprite name
                         name = input("Enter sprite name: ")
-                        if name.isidentifier():  # Check if it's a valid Python identifier
+                        if name.isidentifier():
                             self.sprite_name = name
                         else:
                             print("Invalid name! Using default name 'sprite'")
@@ -166,17 +310,43 @@ class SpriteDrawer:
                     elif event.key == pg.K_ESCAPE:  # Cancel current line
                         self.start_point = None
                         self.preview_end = None
+                    elif event.key == pg.K_EQUALS:
+                        old_grid_size = self.grid_size
+                        self.grid_size += 4
+                        # Adjust center to maintain grid alignment
+                        self.center_x = self.width // (2 * self.grid_size) * self.grid_size
+                        self.center_y = self.height // (2 * self.grid_size) * self.grid_size
+                    elif event.key == pg.K_MINUS:
+                        if self.grid_size > 4:  # Prevent grid from becoming too small
+                            old_grid_size = self.grid_size
+                            self.grid_size -= 4
+                            # Adjust center to maintain grid alignment
+                            self.center_x = self.width // (2 * self.grid_size) * self.grid_size
+                            self.center_y = self.height // (2 * self.grid_size) * self.grid_size
+                    elif event.key == pg.K_i:  # Import reference image
+                        self.load_reference_image()
+                    elif event.key == pg.K_r:  # Toggle reference image
+                        self.show_reference = not self.show_reference
+                    elif event.key == pg.K_UP:  # Increase reference image opacity
+                        self.reference_alpha = min(255, self.reference_alpha + 16)
+                        self.update_reference_surface()
+                    elif event.key == pg.K_DOWN:  # Decrease reference image opacity
+                        self.reference_alpha = max(0, self.reference_alpha - 16)
+                        self.update_reference_surface()
                         
                 elif event.type == pg.VIDEORESIZE:
+                    old_width = self.width
+                    old_height = self.height
                     self.width = event.w
                     self.height = event.h
-                    # Keep center in grid units to prevent offset
+                    # Adjust center to maintain grid alignment
                     self.center_x = self.width // (2 * self.grid_size) * self.grid_size
                     self.center_y = self.height // (2 * self.grid_size) * self.grid_size
                     self.screen = pg.display.set_mode((self.width, self.height), pg.RESIZABLE)
             
             # Draw everything
             self.screen.fill(self.BLACK)
+            self.draw_reference_image()  # Draw reference image first
             self.draw_grid()
             self.draw_points()
             pg.display.flip()
